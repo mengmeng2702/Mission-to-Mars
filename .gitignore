@@ -1,3 +1,5 @@
+# ignore the practice file in the Mission-to-mars folder
+practice.ipynb
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

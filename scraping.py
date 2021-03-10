@@ -6,7 +6,7 @@ import datetime as dt
 
 #path to chromedriver
 #!which chromedriver
-
+data = {}
 # Set the executable path and initialize the chrome browser in splinter
 executable_path = {'executable_path': '/usr/local/bin/chromedriver'}
 def scrape_all():
@@ -20,7 +20,9 @@ def scrape_all():
         "news_title": news_title,
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
-        "last_modified": dt.datetime.now()
+        "facts": mars_facts(),
+        "last_modified": dt.datetime.now(),
+        "hemisphere" :  hemisphere(browser)
     }
 
     #stop webdriver and return data
@@ -92,8 +94,43 @@ def mars_facts():
 
     #convert dataframe into HTML format, add bootstrap
     # return the values back to html format
-    return df.to_html()
+    return df.to_html(classes="table bg-dark text-light")
 
-if __name__ == "__main__":
-    #if running as script, print scraped data
-    print(scrape_all())
+def hemisphere(browser):
+    url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
+    browser.visit(url)
+
+    links = browser.find_by_css("a.product-item h3")
+    hemisphere_image_urls = []
+
+    for image in range(len(links)):
+
+        browser.find_by_css("a.product-item h3")[image].click()
+        #get the image url and get the title
+        html = browser.html
+        hemispheres_soup = soup(html, "html.parser")
+
+        title = hemispheres_soup.find("h2").get_text()
+
+
+        images = hemispheres_soup.find_all("div",class_="downloads")
+
+        for image in images:
+            image_url = image.find("a",href =True)
+            url = image_url["href"]
+
+        browser.back()
+        
+        hemispheres = {}
+        hemispheres["img_url"] = url
+        hemispheres["title"] = title
+
+        hemisphere_image_urls.append(hemispheres)
+    return hemisphere_image_urls
+
+    # 5. Quit the browser
+    browser.quit()
+
+    if __name__ == "__main__":
+        #if running as script, print scraped data
+        print(scrape_all())
